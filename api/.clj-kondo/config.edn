@@ -1,0 +1,2 @@
+{:lint-as {compojure.core/defroutes clojure.core/def
+           compojure.core/let-routes clojure.core/let}}

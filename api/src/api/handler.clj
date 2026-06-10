@@ -39,13 +39,19 @@
     (como-json (db/obter-usuario)))
   (POST "/alimentos" req
     (let [{:keys [descricao quantidade data]} (:body req) ;; destructure, pega a descricao, quantidade e data da requisicao que ta chegando e manda pra essas constantes
+          _ (println "BODY RECEBIDO:" (:body req))
+          _ (println "QUANTIDADE:" quantidade "TIPO:" (type quantidade))
           calorias (externa/calorias-alimento descricao quantidade)
+          _ (println "CALORIAS CALCULADAS:" calorias)
           transacao {:tipo "ganho"
                      :descricao descricao
                      :quantidade quantidade
                      :data data
-                     :calorias calorias}]
-      (como-json (db/salvar-transacao transacao) 201)))
+                     :calorias calorias}
+          _ (println "TRANSACAO:" transacao)
+          resultado (db/salvar-transacao transacao)
+          _ (println "RESULTADO REGISTRO:" resultado)]
+      (como-json resultado 201)))
   
   (POST "/atividade" req 
     (let [{:keys [descricao duracao data]} (:body req)

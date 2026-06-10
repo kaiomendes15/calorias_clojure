@@ -18,14 +18,20 @@
   (let [resposta (chamar "https://api.nal.usda.gov/fdc/v1/foods/search"
                          {"api_key" api-key-usda
                           "query" descricao
+                          "dataType" ["Foundation" "SR Legacy"]
                           "pageSize" "1"} ;; params
                          {} ;; headers (vazio)
                          )
         nutrientes (-> resposta :foods first :foodNutrients)
         kcal-por-100g (->> nutrientes
-                           (filter #(= "Energy" (:nutrientName %)))
+                           (filter #(and (= "Energy" (:nutrientName %))
+                                         (= "KCAL"   (:unitName %))))
                            (first)
                            :value)]
+    (println "=== kcal por 100g: ===")
+    (println kcal-por-100g)
+    (println (* kcal-por-100g (/ quantidade 100.0)))
+    (println "=== kcal por 100g: ===\n")
     (println "=== RESPOSTA USDA ===")
     (println resposta)
     (println "=== FIM ===")

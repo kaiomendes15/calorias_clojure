@@ -11,7 +11,10 @@
   (:usuario @estado))
 
 (defn salvar-transacao [transacao]
-  (let [colecao-atualizada (swap! estado update :transacoes conj transacao)]))
+  (let [novo-id (inc (count (:transacoes @estado)))
+        com-id (assoc transacao :id novo-id)]
+    (swap! estado update :transacoes conj com-id)
+    com-id))
 
 (defn transacoes []
   (:transacoes @estado))

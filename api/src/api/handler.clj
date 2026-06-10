@@ -9,9 +9,6 @@
             [api.db :as db]
             [api.externa :as externa]))
 
-(def api-key "OhqhxCvQUCwTUIAGayVMUiH0r00vvuhPS87T6vp5")
-(def base-url "https://api.nal.usda.gov/fdc/v1")
-
 (defn como-json [conteudo & [status]]
   {:status (or status 200)
    :headers {"Content-Type" "application/json; charset=utf-8"}
@@ -19,8 +16,8 @@
 
 (defn- no-periodo? [inicio fim transacao]
   (let [data (:data transacao)]
-    (and (>= (compare data inicio) 0) 
-         (<= (compare data fim) 0))))
+    (and (or (nil? inicio) (>= (compare data inicio) 0))
+         (or (nil? fim)    (<= (compare data fim) 0)))))
 
 (defn- filtrar-periodo [inicio fim]
   (filter (partial no-periodo? inicio fim) (db/transacoes)))
@@ -31,6 +28,9 @@
                   :else (- acumulador (:calorias transacao))))
           0 
           transacoes))
+
+(defn- peso-usuario []
+  (-> (db/obter-usuario) :peso))
 
 (defroutes app-routes
   (POST "/usuario" req 
@@ -53,9 +53,10 @@
           _ (println "RESULTADO REGISTRO:" resultado)]
       (como-json resultado 201)))
   
-  (POST "/atividade" req 
+  (POST "/atividades" req 
     (let [{:keys [descricao duracao data]} (:body req)
-          calorias-gastas (externa/calorias-atividade descricao duracao)
+          peso (peso-usuario)
+          calorias-gastas (externa/calorias-atividade descricao duracao peso)
           transacao {:tipo "perda"
                      :descricao descricao
                      :duracao duracao

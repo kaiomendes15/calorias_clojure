@@ -5,6 +5,7 @@
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
             [ring.middleware.json :refer [wrap-json-body]]
             [compojure.core :refer :all]
+            [clojure.string :as str]
             [clj-http.client :as http]
             [api.db :as db]
             [api.externa :as externa]))
@@ -19,8 +20,12 @@
     (and (or (nil? inicio) (>= (compare data inicio) 0))
          (or (nil? fim)    (<= (compare data fim) 0)))))
 
+(defn- nil-se-vazio [s]
+  (when-not (str/blank? s) s))
+
 (defn- filtrar-periodo [inicio fim]
-  (filter (partial no-periodo? inicio fim) (db/transacoes)))
+  (filter (partial no-periodo? (nil-se-vazio inicio) (nil-se-vazio fim))
+          (db/transacoes)))
 
 (defn- calcular-saldo [transacoes]
   (reduce (fn [acumulador transacao] 
